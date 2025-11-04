@@ -439,13 +439,14 @@ static CK_RV call_connect(CallState * cs)
 		free(host);
 
 		if (! strncmp("tls://", pkcs11_socket_path, 6)) {
+			const char *identity = getenv("PKCS11_TLS_IDENTITY");
 			cs->tls = calloc(1, sizeof(GckRpcTlsPskState));
 			if (cs->tls == NULL) {
 				warning(("can't allocate memory for TLS-PSK"));
 				return CKR_HOST_MEMORY;
 			}
 
-			if (! gck_rpc_init_tls_psk(cs->tls, tls_psk_key_filename, NULL, GCK_RPC_TLS_PSK_CLIENT)) {
+			if (! gck_rpc_init_tls_psk(cs->tls, tls_psk_key_filename, identity, GCK_RPC_TLS_PSK_CLIENT)) {
 				warning(("TLS-PSK initialization failed"));
 				return CKR_DEVICE_ERROR;
 			}
