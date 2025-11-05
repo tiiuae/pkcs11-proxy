@@ -262,7 +262,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	path = getenv("PKCS11_DAEMON_SOCKET");
+	path = secure_getenv("PKCS11_DAEMON_SOCKET");
 	if (!path && argc == 3)
            path = argv[2];
         if (!path)
@@ -272,7 +272,7 @@ int main(int argc, char *argv[])
 	tls = NULL;
 	tls_psk_keyfile = NULL;
 	if (! strncmp("tls://", path, 6)) {
-		tls_psk_keyfile = getenv("PKCS11_PROXY_TLS_PSK_FILE");
+		tls_psk_keyfile = secure_getenv("PKCS11_PROXY_TLS_PSK_FILE");
 		if (! tls_psk_keyfile || ! tls_psk_keyfile[0]) {
 			fprintf(stderr, "key file must be specified for tls:// socket.\n");
 			exit(1);
