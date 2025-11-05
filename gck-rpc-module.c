@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#include "gck-rpc-layer.h"
 #include "gck-rpc-private.h"
 #include "gck-rpc-tls-psk.h"
 
@@ -439,7 +438,7 @@ static CK_RV call_connect(CallState * cs)
 		free(host);
 
 		if (! strncmp("tls://", pkcs11_socket_path, 6)) {
-			const char *identity = getenv("PKCS11_TLS_IDENTITY");
+			const char *identity = secure_getenv("PKCS11_TLS_IDENTITY");
 			cs->tls = calloc(1, sizeof(GckRpcTlsPskState));
 			if (cs->tls == NULL) {
 				warning(("can't allocate memory for TLS-PSK"));
@@ -1353,7 +1352,7 @@ static CK_RV rpc_C_Initialize(CK_VOID_PTR init_args)
 
 	/* Lookup the socket path, append '.pkcs11' if it is a domain socket. */
 	if (pkcs11_socket_path[0] == 0) {
-		path = getenv("PKCS11_PROXY_SOCKET");
+		path = secure_getenv("PKCS11_PROXY_SOCKET");
 		if (path && path[0]) {
 			if ((! strncmp("tcp://", path, 6)) ||
 			    (! strncmp("tls://", path, 6)))
@@ -1374,7 +1373,7 @@ static CK_RV rpc_C_Initialize(CK_VOID_PTR init_args)
 	/* If socket path indicates TLS, make sure tls_psk_key_filename is populated. */
 	if (! strncmp("tls://", pkcs11_socket_path, 6)) {
 		if (! tls_psk_key_filename[0]) {
-			path = getenv("PKCS11_PROXY_TLS_PSK_FILE");
+			path = secure_getenv("PKCS11_PROXY_TLS_PSK_FILE");
 			if (path && path[0]) {
 				snprintf(tls_psk_key_filename, sizeof(tls_psk_key_filename),
 					 "%s", path);
