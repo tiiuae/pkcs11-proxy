@@ -39,6 +39,12 @@
           echo "Python with PyKCS11: $(python --version)"
           echo "Try: python -c 'import PyKCS11; print(PyKCS11.__version__)'"
           echo
+          echo " Building ... "
+          echo "  mkdir -p build"
+          echo "  cd build"
+          echo "  cmake .. -DCMAKE_BUILD_TYPE=Release"
+          echo "  make -j$(nproc)"
+          echo
         '';
       };
     });
