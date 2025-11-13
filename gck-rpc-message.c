@@ -272,7 +272,7 @@ gck_rpc_message_write_attribute_array(GckRpcMessage * msg,
 		egg_buffer_add_uint32(&msg->buffer, attr->type);
 
 		/* Write out the attribute validity */
-		validity = (((CK_LONG) attr->ulValueLen) == -1) ? 0 : 1;
+		validity = (((CK_ULONG) attr->ulValueLen) == -1) ? 0 : 1;
 		egg_buffer_add_byte(&msg->buffer, validity);
 
 		/* The attribute length and value */

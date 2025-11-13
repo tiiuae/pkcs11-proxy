@@ -225,6 +225,7 @@ int gck_rpc_mechanism_has_no_parameters(CK_MECHANISM_TYPE mech)
 	case CKM_RIPEMD160:
 	case CKM_RIPEMD160_HMAC:
 	case CKM_KEY_WRAP_LYNKS:
+	case CKM_EDDSA:
 		return 1;
 	default:
 		return 0;
