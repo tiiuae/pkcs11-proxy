@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Copyright (c) 2012, 2013, NORDUnet A/S
 # All rights reserved.
@@ -60,6 +60,12 @@ import logging
 import argparse
 import socketserver
 import PyKCS11 # used to get all the PKCS#11 defines
+
+import binascii
+def b2hex(b):
+    if isinstance(b, str):
+        b = b.encode('latin1')
+    return binascii.hexlify(b).decode('ascii')
 
 default_host = "localhost"
 default_port_in = 2344
@@ -248,14 +254,14 @@ class ProxyHandler(socketserver.StreamRequestHandler):
                     break
                 # Pass length to real server.
                 self.p11proxy.send(length)
-                self.logger.debug("\n\nRequest length is {}".format(length.encode('hex')))
+                self.logger.debug("\n\nRequest length is {}".format(b2hex(length)))
                 self._handle_request(struct.unpack('>L', length)[0])
 
                 # Read response. Again, first 32 bits are length.
                 length = self.p11proxy.recv(4)
                 # Pass length to client.
                 self.request.sendall(length)
-                self.logger.debug("\n\nAnswer length is {}".format(length.encode('hex')))
+                self.logger.debug("\n\nAnswer length is {}".format(b2hex(length)))
                 self._handle_answer(struct.unpack('>L', length)[0])
         except Exception as e:
             self.logger.exception("Got exception handling request from {}".format(self.client_address[0]))
@@ -267,7 +273,7 @@ class ProxyHandler(socketserver.StreamRequestHandler):
         """
         self.logger.debug("Request({})".format(length))
         data = self.request.recv(length)
-        self.logger.debug(" R: {}".format(data.encode('hex')))
+        self.logger.debug(" R: {}".format(b2hex(data)))
         self.p11proxy.send(data)
         # parse request
         (call_id, rest) = self._get_uint32(data)
@@ -278,7 +284,7 @@ class ProxyHandler(socketserver.StreamRequestHandler):
         self.logger.debug(" R: name {}".format(rinfo[1]))
         fmt = rinfo[2]
         if fmt:
-            self.logger.debug(" R: fmt {} ({})".format(fmt, fmt.encode('hex')))
+            self.logger.debug(" R: fmt {} ({})".format(fmt, b2hex(fmt)))
             return self._parse_message('R', fmt, rest)
 
     def _handle_answer(self, length):
@@ -287,7 +293,7 @@ class ProxyHandler(socketserver.StreamRequestHandler):
         """
         self.logger.debug("Answer({})".format(length))
         data = self.p11proxy.recv(length)
-        self.logger.debug(" A: {}".format(data.encode('hex')))
+        self.logger.debug(" A: {}".format(b2hex(data)))
         self.request.sendall(data)
         (call_id, rest) = self._get_uint32(data)
         if call_id > len(request_list):
@@ -305,7 +311,7 @@ class ProxyHandler(socketserver.StreamRequestHandler):
             self.logger.debug(" A: {}".format(PyKCS11.CKR[ckr]))
         fmt = rinfo[3]
         if fmt:
-            self.logger.debug(" A: fmt {} ({})".format(fmt, fmt.encode('hex')))
+            self.logger.debug(" A: fmt {} ({})".format(fmt, b2hex(fmt)))
             self._parse_message('A', fmt, rest)
 
     def _parse_message(self, msgtype, fmt, data):
@@ -337,7 +343,7 @@ class ProxyHandler(socketserver.StreamRequestHandler):
         """
         if not fmt:
             if data:
-                self.logger.warning("{} bytes left after processing : {}".format(len(data), data.encode('hex')))
+                self.logger.warning("{} bytes left after processing : {}".format(len(data), b2hex(data)))
             return []
         #self.logger.debug("PARSING {} FROM {}".format(fmt[0], data.encode('hex')))
         if fmt[0] == 'u':
@@ -363,7 +369,7 @@ class ProxyHandler(socketserver.StreamRequestHandler):
                 # array is now fully handled, remove next element of fmt
                 fmt = fmt[1:]
                 if rest:
-                    self.logger.debug(" {}: CKR_BUFFER_TOO_SMALL leaving data {} ({} bytes) for fmt {}".format(msgtype, rest.encode('hex'), len(rest), fmt[1:]))
+                    self.logger.debug(" {}: CKR_BUFFER_TOO_SMALL leaving data {} ({} bytes) for fmt {}".format(msgtype, b2hex(rest), len(rest), fmt[1:]))
             else:
                 if fmt[1] == 'y':
                     # simple byte array (i.e. string to us)
@@ -443,7 +449,7 @@ class ProxyHandler(socketserver.StreamRequestHandler):
                 pass
             elif fmt[1] == 'u':
                 # ulong buffer, just an uint32 (?)
-                self.logger.debug("PARSING {} FROM {}".format(fmt[0], data.encode('hex')))
+                self.logger.debug("PARSING {} FROM {}".format(fmt[0], b2hex(data)))
                 (this, rest) = self._get_uint32(data)
                 self.logger.debug(" {}: ulong buffer {}".format(msgtype, hex(this)))
             else:
@@ -451,7 +457,7 @@ class ProxyHandler(socketserver.StreamRequestHandler):
             # need to munch an extra fmt
             fmt = fmt[1:]
         else:
-            self.logger.warn(" {}: STOPPING at fmt {}, data {}".format(msgtype, fmt[0], data.encode('hex')))
+            self.logger.warn(" {}: STOPPING at fmt {}, data {}".format(msgtype, fmt[0], b2hex(data)))
             return []
         return self._value_dump(msgtype, fmt[1:], rest, res)
 
