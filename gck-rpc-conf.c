@@ -19,6 +19,8 @@
    Boston, MA 02111-1307, USA.
 */
 
+#define _GNU_SOURCE 1
+
 #include "gck-rpc-conf.h"
 #include "gck-rpc-private.h"
 #include <fcntl.h>
@@ -149,7 +151,7 @@ static bool gck_rpc_parse_config_file(const char *filename)
 bool gck_rpc_conf_init(void)
 {
 	gck_rpc_set_defaults();
-	const char *config_path = getenv("PKCS11_PROXY_CONF_PATH");
+	const char *config_path = secure_getenv("PKCS11_PROXY_CONF_PATH");
 	if (!config_path) {
 		return true;
 	}
@@ -158,7 +160,7 @@ bool gck_rpc_conf_init(void)
 
 const char *gck_rpc_conf_get_so_path(const char *env)
 {
-	const char *env_value = getenv(env);
+	const char *env_value = secure_getenv(env);
 	if (env_value && strlen(env_value) > 0) {
 		return env_value;
 	}
@@ -167,7 +169,7 @@ const char *gck_rpc_conf_get_so_path(const char *env)
 
 const char *gck_rpc_conf_get_tls_psk_file(const char *env)
 {
-	const char *env_value = getenv(env);
+	const char *env_value = secure_getenv(env);
 	if (env_value && strlen(env_value) > 0) {
 		return env_value;
 	}
